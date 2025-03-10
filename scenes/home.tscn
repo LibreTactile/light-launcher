@@ -1,3 +1,35 @@
-[gd_scene format=3 uid="uid://dn7nlt0kw7xf3"]
+[gd_scene load_steps=2 format=3 uid="uid://dn7nlt0kw7xf3"]
 
-[node name="Node3D" type="Node3D"]
+[ext_resource type="Script" uid="uid://7m0gpr4dusfb" path="res://scripts/close_btn.gd" id="1_krot7"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "hello!"
+
+[node name="Button" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "bye!"
+script = ExtResource("1_krot7")
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/Button" to="CenterContainer/VBoxContainer/Button" method="_on_button_pressed"]
