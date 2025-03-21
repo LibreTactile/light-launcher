@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://dn7nlt0kw7xf3"]
+[gd_scene load_steps=3 format=3 uid="uid://dn7nlt0kw7xf3"]
 
 [ext_resource type="Script" uid="uid://7m0gpr4dusfb" path="res://scripts/close_btn.gd" id="1_krot7"]
+[ext_resource type="Script" uid="uid://b1ghd5fuxx3p6" path="res://scripts/comm/websocket_server.gd" id="2_u4wd2"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -31,5 +32,8 @@ text = "hello!"
 layout_mode = 2
 text = "bye!"
 script = ExtResource("1_krot7")
+
+[node name="WebSocketServer" type="Node" parent="."]
+script = ExtResource("2_u4wd2")
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/Button" to="CenterContainer/VBoxContainer/Button" method="_on_button_pressed"]

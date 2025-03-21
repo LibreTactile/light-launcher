@@ -33,6 +33,7 @@
 ## Roadmap  
 **Phase 1: Core Functionality (v0.1–v0.3)**  
 - `v0.1`: Minimal launcher  
+  - `v0.1.1` websocket server  
 - `v0.2`: Graph visualization of text and metadata annotations (basic gestures)  
 - `v0.3`: Editable metadata tagging for media and markdown files 
 
