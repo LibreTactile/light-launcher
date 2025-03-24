@@ -17,7 +17,7 @@
 - 🎮 **Gesture & Audio Feedback**: Double-tap, swipe, and press-and-hold gestures with contextual audio cues.  
 
 **Advanced Tools**  
-- 🕸️ **Graph-Based Modeling**: Visualize relationships between apps/files as interactive graphs.  
+- 🕸️ **Graph-Based Modeling**: Visualize relationships between apps/files as interactive graphs. Use SPARQL to query "meaninfully search" the graph.  
 - 🧩 **Custom Perspectives**: Create "viewports"/"windows" for workflows (e.g., "Work Mode," "Entertainment Mode").  
 
 ---
@@ -27,24 +27,27 @@
 |------------------------|-----------------------------------------------------------------------------|  
 | **Android App**        | Built with Godot (pending v0.3: minimal graph launcher POC). [~~Download APK~~](link-to-apk) |  
 | **3D-Printed Grid**    | Tactile overlay for phones/tablets. [~~STL Files~~](hardware/3d-models) (pending phase 2)         |  
+| Peripherials| TOMAT;Wearable sensations; bluetooth/usb gamepad; hid devices, etc...  |
 
 ---
 
 ## Roadmap  
 **Phase 1: Core Functionality (v0.1–v0.3)**  
 - `v0.1`: Minimal launcher  
-  - `v0.1.1` websocket server  
-- `v0.2`: Graph visualization of text and metadata annotations (basic gestures)  
-- `v0.3`: Editable metadata tagging for media and markdown files 
+  - `v0.1.1` websocket server 
+  - `v0.1.2` buttons grid 
+- `v0.2`: "Light TOMAT" mode (basic tactile feedback grid)  
+- `v0.3`: Graph visualization of text and metadata annotations (basic gestures)  
+- `v0.4`: Editable metadata tagging for media and markdown files 
 
 **Phase 2: TOMAT Integration (v0.4–v0.6)**  
-- `v0.4`: Hierarchy mode (group apps/files into custom clusters) to show different perspectives/windows  
-- `v0.5`: "Light TOMAT" mode (basic tactile feedback grid)  
-- `v0.6`: Full TOMAT mode (advanced tactile patterns, AI-driven navigation, screen reader interaction)  
+- `v0.5`: Hierarchy mode (group apps/files into custom clusters) to show different perspectives/windows  
+- `v0.6`: Expose Android Accessibility features
+- `v0.7`: Full TOMAT mode (advanced tactile patterns, AI-driven navigation, screen reader interaction)  
 
 **Phase 3: Semantic Queries (v0.7–v0.10)**  
-- `v0.7–v0.8`: App/file relationship graphs  
-- `v0.9–v0.10`: SPARQL endpoint integration for natural language queries, open linked data and semantic web (i.e. europeana, gallica, semantic wikimedia)  
+- `v0.8–v0.9`: App/file relationship graphs  
+- `v0.10–v0.11`: SPARQL endpoint integration for natural language queries, open linked data and semantic web (i.e. europeana, gallica, semantic wikimedia)  
 
 ---
 
