@@ -35,7 +35,8 @@
 **Phase 1: Core Functionality (v0.1–v0.3)**  
 - `v0.1`: Minimal launcher  
   - `v0.1.1` websocket server 
-  - `v0.1.2` buttons grid 
+  - `v0.1.2` buttons grid
+  - `v0.1.3` vibration patterns from recieved model 
 - `v0.2`: "Light TOMAT" mode (basic tactile feedback grid)  
 - `v0.3`: Graph visualization of text and metadata annotations (basic gestures)  
 - `v0.4`: Editable metadata tagging for media and markdown files 
