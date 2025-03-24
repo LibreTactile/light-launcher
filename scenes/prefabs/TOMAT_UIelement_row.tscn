@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://d0hlmds2bmo4c"]
+
+[node name="element row" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 300)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="btn_h1" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 100
+text = "h1"
+
+[node name="VSeparator2" type="VSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.15
+
+[node name="btn_h2" type="Button" parent="."]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 100
+text = "h2"
+
+[node name="VSeparator3" type="VSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.15
+
+[node name="btn_h3" type="Button" parent="."]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 100
+text = "h3"
+
+[node name="VSeparator4" type="VSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.15
+
+[node name="btn_h4" type="Button" parent="."]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 100
+text = "h4"
+
+[node name="VSeparator" type="VSeparator" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+
+[node name="btn_enter" type="Button" parent="."]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 100
+text = "↵"

@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://bqsfcokp31rnm"]
+
+[node name="Nav Buttons" type="HBoxContainer"]
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="btn_star" type="Button" parent="."]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 150
+text = "*"
+
+[node name="btn_+" type="Button" parent="."]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 150
+text = "+"
+
+[node name="btn_-" type="Button" parent="."]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 150
+text = "-"
+
+[node name="btn_up" type="Button" parent="."]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 150
+text = "/\\"
+
+[node name="btn_down" type="Button" parent="."]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 150
+text = "\\/"
+
+[node name="btn_>" type="Button" parent="."]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 150
+text = ">
+"
