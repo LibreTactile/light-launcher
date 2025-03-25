@@ -1,10 +1,8 @@
 extends Button
 
-# Enum for button states
-enum ButtonState {INACTIVE, ACTIVE, PULSATING}
 
 # Button properties
-var button_state = ButtonState.INACTIVE
+var button_state = Globals.ButtonState.INACTIVE
 var is_vibrating = false
 var is_pulsating = false
 var vibration_timer = null
@@ -97,15 +95,15 @@ func _on_vibration_timer_timeout():
 		return
 	
 	match button_state:
-		ButtonState.ACTIVE:
+		Globals.ButtonState.ACTIVE:
 			# Continuous vibration - just keep vibrating every interval
 			Input.vibrate_handheld(50, 1.0)
 			vibration_timer.start()  # Restart timer immediately
 			
-		ButtonState.INACTIVE:
+		Globals.ButtonState.INACTIVE:
 			pass
 			
-		ButtonState.PULSATING:
+		Globals.ButtonState.PULSATING:
 			# Pulsating behavior remains unchanged
 			if _is_approx_zero(current_pulse_cycle) or fmod(current_pulse_cycle, 0.05) < 0.001:
 				_pulse_vibrate()
@@ -129,16 +127,16 @@ func _on_vibration_timer_timeout():
 func _trigger_vibration():
 	is_vibrating = true
 	match button_state:
-		ButtonState.ACTIVE:
+		Globals.ButtonState.ACTIVE:
 			# For ACTIVE state, start continuous vibration immediately
 			vibration_timer.wait_time = 0.05  # 50ms interval
 			vibration_timer.start()
 			Input.vibrate_handheld(50, 1.0)  # Initial vibration
 			
-		ButtonState.INACTIVE:
+		Globals.ButtonState.INACTIVE:
 			pass
 			
-		ButtonState.PULSATING:
+		Globals.ButtonState.PULSATING:
 			start_pulsating_vibration()
 # Stop vibration
 func _stop_vibration():
@@ -158,12 +156,12 @@ func set_state(new_state):
 	button_state = new_state
 	
 	# Stop any existing vibration pattern
-	if is_vibrating and button_state != ButtonState.PULSATING:
+	if is_vibrating and button_state != Globals.ButtonState.PULSATING:
 		is_vibrating = false
 		vibration_timer.stop()
 	
 	# Start pulsating if that's the new state
-	if button_state == ButtonState.PULSATING and not is_vibrating:
+	if button_state == Globals.ButtonState.PULSATING and not is_vibrating:
 		start_pulsating_vibration()
 	
 	# Update button appearance
@@ -172,9 +170,9 @@ func set_state(new_state):
 # Update button appearance based on state
 func update_appearance():
 	match button_state:
-		ButtonState.ACTIVE:
+		Globals.ButtonState.ACTIVE:
 			modulate = Color(0, 1, 0, 1)  # Green
-		ButtonState.INACTIVE:
+		Globals.ButtonState.INACTIVE:
 			modulate = Color(0.5, 0.5, 0.5, 1)  # Gray
-		ButtonState.PULSATING:
+		Globals.ButtonState.PULSATING:
 			modulate = Color(1, 0, 0, 1)  # Red
