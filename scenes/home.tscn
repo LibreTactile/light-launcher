@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://dn7nlt0kw7xf3"]
+[gd_scene load_steps=6 format=3 uid="uid://dn7nlt0kw7xf3"]
 
 [ext_resource type="Script" uid="uid://7m0gpr4dusfb" path="res://scripts/close_btn.gd" id="1_krot7"]
 [ext_resource type="PackedScene" uid="uid://d0hlmds2bmo4c" path="res://scenes/prefabs/TOMAT_UIelement_row.tscn" id="1_reixx"]
+[ext_resource type="Script" uid="uid://cilqtnpo3b5xh" path="res://scripts/model_manager.gd" id="1_uhids"]
 [ext_resource type="Script" uid="uid://b1ghd5fuxx3p6" path="res://scripts/comm/websocket_server.gd" id="2_u4wd2"]
 [ext_resource type="PackedScene" uid="uid://bqsfcokp31rnm" path="res://scenes/prefabs/TOMAT_UI_nav_buttons.tscn" id="2_uhids"]
 
@@ -22,6 +23,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_uhids")
 
 [node name="Element Rows" type="VBoxContainer" parent="TOMAT UI"]
 layout_mode = 2
