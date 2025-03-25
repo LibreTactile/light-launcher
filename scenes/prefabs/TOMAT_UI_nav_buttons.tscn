@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://bqsfcokp31rnm"]
+[gd_scene load_steps=2 format=3 uid="uid://bqsfcokp31rnm"]
+
+[ext_resource type="Script" uid="uid://fi47co2572pf" path="res://scripts/btn_input.gd" id="1_7t7l8"]
 
 [node name="Nav Buttons" type="HBoxContainer"]
 theme_override_constants/separation = 30
@@ -9,7 +11,10 @@ custom_minimum_size = Vector2(155, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 150
+action_mode = 0
 text = "*"
+script = ExtResource("1_7t7l8")
+button_name = "S"
 
 [node name="btn_+" type="Button" parent="."]
 custom_minimum_size = Vector2(155, 0)
@@ -17,6 +22,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 150
 text = "+"
+script = ExtResource("1_7t7l8")
+button_name = "P"
 
 [node name="btn_-" type="Button" parent="."]
 custom_minimum_size = Vector2(155, 0)
@@ -24,6 +31,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 150
 text = "-"
+script = ExtResource("1_7t7l8")
+button_name = "M"
 
 [node name="btn_up" type="Button" parent="."]
 custom_minimum_size = Vector2(155, 0)
@@ -31,6 +40,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 150
 text = "/\\"
+script = ExtResource("1_7t7l8")
+button_name = "U"
 
 [node name="btn_down" type="Button" parent="."]
 custom_minimum_size = Vector2(155, 0)
@@ -38,6 +49,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 150
 text = "\\/"
+script = ExtResource("1_7t7l8")
+button_name = "D"
 
 [node name="btn_>" type="Button" parent="."]
 custom_minimum_size = Vector2(155, 0)
@@ -46,3 +59,5 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 150
 text = ">
 "
+script = ExtResource("1_7t7l8")
+button_name = "N"

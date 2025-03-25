@@ -34,11 +34,13 @@ func _initialize_rows():
 				"state": Globals.ButtonState.INACTIVE
 			}
 			
-			# Collect buttons in this row
+			# Collect buttons in this row & set the enter button name
 			for child in row_node.get_children():
 				if child is Button and child.has_method("set_state"):
 					row_data.buttons.append(child)
-			
+				if child is Button and child.has_method("set_button_name"):
+					child.set_button_name(str(i+1))
+					
 			rows[i] = row_data
 	
 	# Set initial state

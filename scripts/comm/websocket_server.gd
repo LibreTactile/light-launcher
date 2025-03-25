@@ -70,8 +70,8 @@ static func send_to_all(data: String) -> void:
 	if instance:
 		for client_id in instance.clients:
 			var websocket = instance.clients[client_id]
-			websocket.put_packet(data.to_utf8_buffer())
-			websocket.flush()
+			# In Godot 4, we just send the packet - no flush needed
+			websocket.send_text(data)
 			print("Sent data to client ", client_id, ": ", data)
 
 ## Connects a receiver to the model_data_received signal.
