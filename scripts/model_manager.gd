@@ -7,9 +7,9 @@ const ROW_COUNT = 4
 # Called when the node enters the scene tree for the first time
 func _ready():
 	# Get reference to the WebSocket server
-	var websocket_server = get_node("/root/WebSocketServer")
-	#todo: connect websocket server
-#    websocket_server.connect("model_data_received", self, "_on_model_data_received")
+	var websocket_server = get_node("../Managers/WebSocketServer")
+	websocket_server.connect("model_data_received", _on_model_data_received)
+
 	# Initialize rows
 	_initialize_rows()
 	# debug initialization
@@ -65,6 +65,7 @@ func _set_button_state(row_idx: int, button_idx: int, state):
 
 # Process model data and update states
 func _on_model_data_received(data):
+	print("model manager, data recieved",data)
 	# Expected data format:
 	# {
 	#   "rows": [
