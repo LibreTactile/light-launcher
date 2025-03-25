@@ -6,10 +6,9 @@ const ROW_COUNT = 4
 
 # Called when the node enters the scene tree for the first time
 func _ready():
-	# Get reference to the WebSocket server
-	var websocket_server = get_node("../Managers/WebSocketServer")
-	websocket_server.connect("model_data_received", _on_model_data_received)
-
+	
+	# Connect to static WebSocketServer signals
+	WebSocketServer.connect_to_signal( self, _on_model_data_received)
 	# Initialize rows
 	_initialize_rows()
 	# debug initialization
@@ -64,8 +63,8 @@ func _set_button_state(row_idx: int, button_idx: int, state):
 		rows[row_idx].buttons[button_idx].set_state(state)
 
 # Process model data and update states
-func _on_model_data_received(data):
-	print("model manager, data recieved",data)
+func _on_model_data_received(jsonData):
+	print("model manager, data recieved",jsonData)
 	# Expected data format:
 	# {
 	#   "rows": [
@@ -81,7 +80,13 @@ func _on_model_data_received(data):
 	#     ...
 	#   ]
 	# }
-	
+	# Parse JSON string to dictionary
+	var data = JSON.parse_string(jsonData)
+	if data == null:
+		push_error("Failed to parse JSON data")
+		return
+	for row_idx in rows:
+		_set_row_state(row_idx, Globals.ButtonState.INACTIVE)
 	if "rows" in data:
 		for row_data in data.rows:
 			var row_idx = row_data.row
