@@ -133,11 +133,13 @@ func _trigger_vibration():
 			vibration_timer.start()
 			Input.vibrate_handheld(50, 1.0)  # Initial vibration
 			
+		Globals.ButtonState.PULSATING:
+			# Only start pulsating if actually touched
+			if active_touches.values().any(func(v): return v):
+				start_pulsating_vibration()
+			
 		Globals.ButtonState.INACTIVE:
 			pass
-			
-		Globals.ButtonState.PULSATING:
-			start_pulsating_vibration()
 # Stop vibration
 func _stop_vibration():
 	if is_vibrating:
@@ -155,16 +157,11 @@ func _is_point_inside(point):
 func set_state(new_state):
 	button_state = new_state
 	
-	# Stop any existing vibration pattern
-	if is_vibrating and button_state != Globals.ButtonState.PULSATING:
-		is_vibrating = false
-		vibration_timer.stop()
+	# Stop any existing vibration pattern immediately
+	if is_vibrating:
+		_stop_vibration()
 	
-	# Start pulsating if that's the new state
-	if button_state == Globals.ButtonState.PULSATING and not is_vibrating:
-		start_pulsating_vibration()
-	
-	# Update button appearance
+	# Update appearance regardless of state
 	update_appearance()
 
 # Update button appearance based on state
@@ -176,3 +173,9 @@ func update_appearance():
 			modulate = Color(0.5, 0.5, 0.5, 1)  # Gray
 		Globals.ButtonState.PULSATING:
 			modulate = Color(1, 0, 0, 1)  # Red
+			#todo: add visual indicator of pulsation
+			#if not $AnimationPlayer.is_playing():
+			#	$AnimationPlayer.play("pulse") 
+
+func _exit_tree():
+	_stop_vibration()
