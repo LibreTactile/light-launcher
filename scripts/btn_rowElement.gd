@@ -4,12 +4,16 @@ extends Button
 enum ButtonState {INACTIVE, ACTIVE, PULSATING}
 
 # Button properties
-var button_state = ButtonState.PULSATING
+var button_state = ButtonState.INACTIVE
 var is_vibrating = false
+var is_pulsating = false
 var vibration_timer = null
 var pulse_on_time = 0.2
-var pulse_off_time = 0.5
+var pulse_off_time = 0.2
 var active_touches = {}  # Track all active touches and their inside status
+var current_pulse_cycle = 0.0
+var total_pulse_duration = 0.0
+
 # Called when the node enters the scene tree for the first time
 func _ready():
 	vibration_timer = Timer.new()
@@ -57,59 +61,97 @@ func _update_vibration_state():
 	else:
 		_stop_vibration()
 
-# Trigger vibration based on button state
-func _trigger_vibration():
-	is_vibrating = true
-	match button_state:
-		ButtonState.ACTIVE:
-			start_continuous_vibration(50, 50,1.0)
-		ButtonState.INACTIVE:
-			pass
-		ButtonState.PULSATING:
-			start_pulsating_vibration()
-
 # Start continuous vibration pattern
-func start_continuous_vibration(duration_ms, interval_ms,amplitude):
+func start_continuous_vibration(duration_ms, interval_ms, amplitude):
 	if vibration_timer.is_stopped():
 		vibration_timer.wait_time = interval_ms / 1000.0
 		vibration_timer.start()
-	Input.vibrate_handheld(duration_ms,amplitude)
+	Input.vibrate_handheld(duration_ms, amplitude)
+	
+# Start pulsating vibration with specific behavior
+func start_pulsating_vibration():
+	is_vibrating = true
+	is_pulsating = true
+	current_pulse_cycle = 0.0
+	total_pulse_duration = 0.0
+	
+	# Initial vibration
+	_pulse_vibrate()
+	
+	# Start timer to manage pulse cycles
+	vibration_timer.wait_time = 0.05  # Check every 50ms
+	vibration_timer.start()
+
+# Pulse vibration function
+func _pulse_vibrate():
+	# Vibrate for short duration (50ms)
+	Input.vibrate_handheld(50)
+
+# Helper function for float comparison
+func _is_approx_zero(value: float) -> bool:
+	return abs(value) < 0.001
 
 # Handle vibration timer timeout
 func _on_vibration_timer_timeout():
 	if not is_vibrating:
 		return
-		
+	
 	match button_state:
 		ButtonState.ACTIVE:
-			start_continuous_vibration(50, 50,1.0)
+			# Continuous vibration - just keep vibrating every interval
+			Input.vibrate_handheld(50, 1.0)
+			vibration_timer.start()  # Restart timer immediately
+			
 		ButtonState.INACTIVE:
 			pass
+			
 		ButtonState.PULSATING:
-			# Existing pulsating logic
-			if is_vibrating:
-				Input.vibrate_handheld(300)
-				vibration_timer.wait_time = pulse_on_time
+			# Pulsating behavior remains unchanged
+			if _is_approx_zero(current_pulse_cycle) or fmod(current_pulse_cycle, 0.05) < 0.001:
+				_pulse_vibrate()
+			
+			current_pulse_cycle += 0.05
+			total_pulse_duration += 0.05
+			
+			if current_pulse_cycle < pulse_on_time:
+				vibration_timer.wait_time = 0.05
+				vibration_timer.start()
+			elif current_pulse_cycle < (pulse_on_time + pulse_off_time):
+				vibration_timer.wait_time = 0.05
+				vibration_timer.start()
 			else:
-				vibration_timer.wait_time = pulse_off_time
-			vibration_timer.start()
+				current_pulse_cycle = 0.0
+				_pulse_vibrate()
+				vibration_timer.wait_time = 0.05
+				vibration_timer.start()
 
+# Trigger vibration based on button state
+func _trigger_vibration():
+	is_vibrating = true
+	match button_state:
+		ButtonState.ACTIVE:
+			# For ACTIVE state, start continuous vibration immediately
+			vibration_timer.wait_time = 0.05  # 50ms interval
+			vibration_timer.start()
+			Input.vibrate_handheld(50, 1.0)  # Initial vibration
+			
+		ButtonState.INACTIVE:
+			pass
+			
+		ButtonState.PULSATING:
+			start_pulsating_vibration()
 # Stop vibration
 func _stop_vibration():
 	if is_vibrating:
 		is_vibrating = false
+		is_pulsating = false
 		vibration_timer.stop()
+		current_pulse_cycle = 0.0
+		total_pulse_duration = 0.0
 
 # Helper to check if touch point is inside button
 func _is_point_inside(point):
 	return get_global_rect().has_point(point)
-
-# Start pulsating vibration
-func start_pulsating_vibration():
-	is_vibrating = true
-	Input.vibrate_handheld(300)
-	vibration_timer.wait_time = pulse_on_time
-	vibration_timer.start()
 
 # Set button state
 func set_state(new_state):
