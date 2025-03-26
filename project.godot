@@ -15,6 +15,18 @@ run/main_scene="uid://dn7nlt0kw7xf3"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Globals="*res://scripts/globals.gd"
+WebSocketServer="*res://scripts/comm/websocket_server.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=2400
+window/stretch/aspect="keep_width"
+window/handheld/orientation=1
+
 [dotnet]
 
 project/assembly_name="light launcher"
