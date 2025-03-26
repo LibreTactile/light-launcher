@@ -25,7 +25,7 @@
 ## Hardware + Software  
 | Component              | Description                                                                 |  
 |------------------------|-----------------------------------------------------------------------------|  
-| **Android App**        | Built with Godot (pending v0.3: minimal graph launcher POC). [~~Download APK~~](link-to-apk) |  
+| **Android App**        | Built with Godot . [Download debug APK]([link-to-apk](https://github.com/LibreTactile/light-launcher/releases)) |  
 | **3D-Printed Grid**    | Tactile overlay for phones/tablets. [~~STL Files~~](hardware/3d-models) (pending phase 2)         |  
 | Peripherials| TOMAT;Wearable sensations; bluetooth/usb gamepad; hid devices, etc...  |
 
@@ -37,7 +37,7 @@
   - `v0.1.1` websocket server 
   - `v0.1.2` buttons grid
   - `v0.1.3` vibration patterns from recieved model 
-- `v0.2`: "Light TOMAT" mode (basic tactile feedback grid)  
+- `v0.2`: "Light TOMAT" mode (basic tactile i/o grid), connects with [TOMAT-Navi chrome extension](https://github.com/LibreTactile/tomat-navi-prototype/tree/com/websocket)  
 - `v0.3`: Graph visualization of text and metadata annotations (basic gestures)  
 - `v0.4`: Editable metadata tagging for media and markdown files 
 
@@ -66,14 +66,14 @@ Not yet planned
 ---
 
 ## Get Started  
-1. **Install the APK**: Download from the release page ~~or the google playstore~~.  
+1. **Install the APK**: Download the debug apk from the [release page](https://github.com/LibreTactile/light-launcher/releases) ~~or the google playstore~~.  
 2. **Get the hardware (optional)**: Use [3D models](hardware/3d-models) to print the guide, contact your local FabLab.  
 3. **Enable Accessibility**: Activate Light Launcher in Android’s accessibility settings.  
 
 ---
 
 ## License & Contribution  
-- **License**: for now: CC BY-NC-SA 4.0 (non-commercial use only), but planning to migrate to a fully permissive open source license like MIT.
+- **License**: for now: CC BY-NC-SA 4.0 (non-commercial use only), but planning to migrate to a fully permissive open source license like MIT. see more about [TOMAT's IP strategy](https://github.com/LibreTactile/tomat-navi-prototype?tab=readme-ov-file#intellectual-property-strategy). 
 - **Contributions**: Open to issues/PRs! Please follow libretactile contribution guidelines.  
 
 ---
