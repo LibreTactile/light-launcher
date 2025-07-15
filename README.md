@@ -26,8 +26,13 @@
 | Component              | Description                                                                 |  
 |------------------------|-----------------------------------------------------------------------------|  
 | **Android App**        | Built with Godot . [Download debug APK]([link-to-apk](https://github.com/LibreTactile/light-launcher/releases)) |  
-| **3D-Printed Grid**    | Tactile overlay for phones/tablets. [~~STL Files~~](hardware/3d-models) (pending phase 2)         |  
+| **3D-Printed Grid**    | Tactile overlay for phones/tablets. [STL Files](hardware/3d-models) (first draft)         |  
 | Peripherials| TOMAT;Wearable sensations; bluetooth/usb gamepad; hid devices, etc...  |
+
+![3d printed tactile guide](hardware/3d-models/tomat-light-hw-1.png)
+
+![use of tactile guide](hardware/3d-models/tomat-light-hw-2.png)
+
 
 ---
 
@@ -67,7 +72,7 @@ Not yet planned
 
 ## Get Started  
 1. **Install the APK**: Download the debug apk from the [release page](https://github.com/LibreTactile/light-launcher/releases) ~~or the google playstore~~.  
-2. **Get the hardware (optional)**: Use [3D models](hardware/3d-models) to print the guide, contact your local FabLab.  
+2. **Get the hardware (optional)**: Use [3D models](hardware/3d-models) to print the guide, or contact your local FabLab.  
 3. **Enable Accessibility**: Activate Light Launcher in Android’s accessibility settings.  
 
 ---
