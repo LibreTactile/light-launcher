@@ -61,10 +61,10 @@ jobs:
       run: |
         echo "=== Export Presets Content ==="
         cat export_presets.cfg | head -20
-        echo "=== Available Export Presets ==="
-        godot --headless --export-list
         echo "=== Searching for preset names in config ==="
         grep -n "name=" export_presets.cfg
+        echo "=== Checking preset structure ==="
+        grep -A 2 -B 2 "platform=" export_presets.cfg
         
     - name: Create build directory
       run: mkdir -p build
@@ -75,24 +75,34 @@ jobs:
         echo "Working directory: $(pwd)"
         echo "Godot version: $(godot --version)"
         
+        # First, let's try to validate the project without export
+        echo "=== Validating Godot project ==="
+        godot --headless --validate-only --quit
+        
         # Try the export command with explicit preset name
+        echo "=== Attempting export with preset name 'iOS' ==="
         godot --headless --export-debug "iOS" build/LightLauncher.xcodeproj
         
         # Check if export was successful
         if [ $? -eq 0 ]; then
           echo "✅ Export command completed successfully"
         else
-          echo "❌ Export command failed"
+          echo "❌ Export command failed with preset name"
           echo "=== Trying alternative export methods ==="
           
           # Try with different preset name variations
-          echo "Trying with preset index..."
+          echo "Trying with preset index 1..."
           godot --headless --export-debug 1 build/LightLauncher.xcodeproj
           
           if [ $? -ne 0 ]; then
             echo "❌ Export with index also failed"
-            echo "=== Available presets again ==="
-            godot --headless --export-list
+            echo "=== Checking if templates are properly installed ==="
+            ls -la ~/Library/Application\ Support/Godot/export_templates/4.4.stable/
+            echo "=== Checking export_presets.cfg format ==="
+            # Check if the file has proper line endings
+            file export_presets.cfg
+            echo "=== Last few lines of export_presets.cfg ==="
+            tail -10 export_presets.cfg
             exit 1
           fi
         fi
