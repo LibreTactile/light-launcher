@@ -22,8 +22,8 @@ WebSocketServer="*res://scripts/comm/websocket_server.gd"
 
 [display]
 
-window/size/viewport_width=1080
-window/size/viewport_height=2400
+window/size/viewport_width=1170
+window/size/viewport_height=2532
 window/stretch/aspect="keep_width"
 window/handheld/orientation=1
 
