@@ -1,0 +1,150 @@
+name: Build iOS
+on:
+  workflow_dispatch:
+
+# REQUIREMENTS:
+# 1. Godot export preset named "iOS" must exist in export_presets.cfg
+# 2. For signed builds, set repository variable ENABLE_CODE_SIGNING to 'true'
+# 3. For signed builds, add these GitHub secrets:
+#    - APPLE_DEVELOPER_TEAM_ID: Your 10-character Apple Developer Team ID
+#    - IOS_CERTIFICATE_BASE64: Base64 encoded .p12 certificate
+#    - IOS_CERTIFICATE_PASSWORD: Password for the certificate
+#    - IOS_PROVISIONING_PROFILE_BASE64: Base64 encoded .mobileprovision file
+# 4. Ensure your export_presets.cfg has proper bundle identifier and team ID
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Download Godot 4.4
+      run: |
+        wget https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_macos.universal.zip
+        unzip Godot_v4.4-stable_macos.universal.zip -d godot
+        sudo mv godot/Godot.app /Applications/Godot.app
+        sudo ln -s /Applications/Godot.app/Contents/MacOS/Godot /usr/local/bin/godot
+        
+    - name: Download Godot Export Templates
+      run: |
+        mkdir -p ~/Library/Application\ Support/Godot/export_templates/4.4.stable
+        cd ~/Library/Application\ Support/Godot/export_templates/4.4.stable
+        wget https://github.com/godotengine/godot/releases/download/4.4-stable/Godot_v4.4-stable_export_templates.tpz
+        unzip Godot_v4.4-stable_export_templates.tpz
+        mv templates/* .
+        ls -la
+        
+    - name: Verify Godot installation
+      run: |
+        godot --version
+        godot --headless --export-list
+        
+    - name: Create build directory
+      run: mkdir -p build
+      
+    - name: Export iOS Xcode project
+      run: |
+        godot --headless --export-debug "iOS" build/LightLauncher.xcodeproj
+      env:
+        DISPLAY: :99.0
+        
+    - name: Verify export
+      run: |
+        ls -la build/
+        if [ -d "build/LightLauncher.xcodeproj" ]; then
+          echo "✅ Xcode project exported successfully"
+        else
+          echo "❌ Xcode project export failed"
+          exit 1
+        fi
+        
+    - name: Configure iOS project settings
+      run: |
+        # Set iOS Deployment Target
+        if [ -f "build/LightLauncher.xcodeproj/project.pbxproj" ]; then
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [^;]*;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' build/LightLauncher.xcodeproj/project.pbxproj
+          echo "✅ iOS deployment target updated to 14.0"
+        else
+          echo "❌ project.pbxproj not found"
+          exit 1
+        fi
+        
+        # Add NSLocalNetworkUsageDescription to Info.plist
+        INFO_PLIST="build/LightLauncher.xcodeproj/LightLauncher-Info.plist"
+        if [ -f "$INFO_PLIST" ]; then
+          /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string 'Light Launcher uses local network to connect with TOMAT Navigator and provide tactile feedback for accessible navigation.'" "$INFO_PLIST" || echo "NSLocalNetworkUsageDescription already exists"
+          echo "✅ NSLocalNetworkUsageDescription added to Info.plist"
+        else
+          echo "⚠️  Info.plist not found at expected location, checking alternatives..."
+          find build/ -name "*Info.plist" -o -name "*.plist" | head -5
+        fi
+        
+    - name: Build iOS project (unsigned)
+      run: |
+        xcodebuild -project build/LightLauncher.xcodeproj \
+          -scheme LightLauncher \
+          -configuration Development \
+          -archivePath build/LightLauncher.xcarchive \
+          -destination 'generic/platform=iOS' \
+          archive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          DEVELOPMENT_TEAM=""
+          
+    # Optional: Build with signing (requires secrets)
+    - name: Build iOS project (signed)
+      if: ${{ vars.ENABLE_CODE_SIGNING == 'true' }}
+      run: |
+        # Import certificate
+        echo "${{ secrets.IOS_CERTIFICATE_BASE64 }}" | base64 --decode > certificate.p12
+        security create-keychain -p temp_keychain_password build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p temp_keychain_password build.keychain
+        security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temp_keychain_password build.keychain
+        
+        # Import provisioning profile
+        echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        # Build with signing
+        xcodebuild -project build/LightLauncher.xcodeproj \
+          -scheme LightLauncher \
+          -configuration Release \
+          -archivePath build/LightLauncher-signed.xcarchive \
+          -destination 'generic/platform=iOS' \
+          archive \
+          DEVELOPMENT_TEAM="${{ secrets.APPLE_DEVELOPER_TEAM_ID }}"
+          
+    - name: Export IPA
+      run: |
+        cd build
+        if [ -d "LightLauncher.xcarchive" ]; then
+          cd LightLauncher.xcarchive/Products/Applications
+          mkdir -p Payload
+          mv LightLauncher.app Payload/ || mv *.app Payload/
+          zip -r ../../../LightLauncher.ipa Payload/
+          cd ../../../
+          echo "✅ IPA created successfully"
+          ls -la LightLauncher.ipa
+        else
+          echo "❌ xcarchive not found"
+          exit 1
+        fi
+        
+    - name: Upload IPA to GitHub Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: LightLauncher-iOS
+        path: build/LightLauncher.ipa
+        retention-days: 30
+        
+    - name: Upload Xcode project to GitHub Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: LightLauncher-Xcode-Project
+        path: build/LightLauncher.xcodeproj
+        retention-days: 7
