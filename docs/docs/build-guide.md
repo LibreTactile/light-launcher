@@ -1,5 +1,9 @@
 # Light Launcher Build Guide - Android & iOS
 
+
+> You can manually trigger signed and unsigned ios builds with github actions. Read more about that on the [github action readme](build-ios-gha.md).
+
+
 ## Prerequisites
 
 ### General Requirements
