@@ -35,9 +35,14 @@ jobs:
         mv templates/* .
         ls -la
         
-    - name: Verify Godot installation
+    - name: Verify Godot installation and check presets
       run: |
         godot --version
+        echo "Checking for project.godot file:"
+        ls -la project.godot || echo "project.godot not found in root"
+        echo "Checking for export_presets.cfg:"
+        ls -la export_presets.cfg || echo "export_presets.cfg not found in root"
+        echo "Available export presets:"
         godot --headless --export-list
         
     - name: Create build directory
@@ -45,7 +50,21 @@ jobs:
       
     - name: Export iOS Xcode project
       run: |
-        godot --headless --export-debug "iOS" build/LightLauncher.xcodeproj
+        # Try multiple approaches to ensure the export works
+        echo "Attempting export with preset name 'iOS'..."
+        godot --headless --export-debug "iOS" build/LightLauncher.xcodeproj || {
+          echo "Export with 'iOS' failed, trying preset index 1..."
+          godot --headless --export-debug 1 build/LightLauncher.xcodeproj || {
+            echo "Export with index 1 failed, trying 'iOS' without quotes..."
+            godot --headless --export-debug iOS build/LightLauncher.xcodeproj || {
+              echo "All export attempts failed. Listing available presets again:"
+              godot --headless --export-list
+              echo "Contents of export_presets.cfg:"
+              head -20 export_presets.cfg
+              exit 1
+            }
+          }
+        }
       env:
         DISPLAY: :99.0
         
