@@ -1,4 +1,12 @@
 # Godot 4+ specific ignores
-.godot/
+# not igore UID cache https://godotengine.org/article/uid-changes-coming-to-godot-4-4/#what-should-i-change-in-my-project-or-workflow
+.godot/editor
+.godot/mono
+.godot/imported
+.godot/shader_cache
+.godot/.gdignore
+.godot/export_credentials.cfg
+.godot/global_script_class_cache.cfg
+.godot/scene_groups_cache.cfg
 /android/
 .vscode/settings.json
