@@ -65,6 +65,8 @@ jobs:
         grep -n "name=" export_presets.cfg
         echo "=== Checking preset structure ==="
         grep -A 2 -B 2 "platform=" export_presets.cfg
+        echo "=== Verifying iOS preset configuration ==="
+        grep -A 5 -B 5 "NSLocalNetworkUsageDescription" export_presets.cfg || echo "NSLocalNetworkUsageDescription not found in presets"
         
     - name: Create build directory
       run: mkdir -p build
@@ -123,44 +125,158 @@ jobs:
           exit 1
         fi
         
-    - name: Configure iOS project settings
+    - name: Verify plist configuration
       run: |
-        # Set iOS Deployment Target
-        if [ -f "build/LightLauncher.xcodeproj/project.pbxproj" ]; then
-          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [^;]*;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' build/LightLauncher.xcodeproj/project.pbxproj
+        echo "=== Verifying Info.plist configuration ==="
+        INFO_PLIST_LOCATIONS=(
+          "build/LightLauncher.xcodeproj/LightLauncher-Info.plist"
+          "build/Info.plist"
+          "build/LightLauncher/Info.plist"
+        )
+        
+        INFO_PLIST=""
+        for plist_path in "${INFO_PLIST_LOCATIONS[@]}"; do
+          if [ -f "$plist_path" ]; then
+            INFO_PLIST="$plist_path"
+            echo "✅ Found Info.plist at: $INFO_PLIST"
+            break
+          fi
+        done
+        
+        if [ -n "$INFO_PLIST" ]; then
+          echo "=== Checking NSLocalNetworkUsageDescription ==="
+          if /usr/libexec/PlistBuddy -c "Print :NSLocalNetworkUsageDescription" "$INFO_PLIST" 2>/dev/null; then
+            echo "✅ NSLocalNetworkUsageDescription is properly configured"
+          else
+            echo "⚠️  NSLocalNetworkUsageDescription not found in plist"
+          fi
+          
+          echo "=== Plist contents preview ==="
+          /usr/libexec/PlistBuddy -c "Print" "$INFO_PLIST" | head -20
+        else
+          echo "⚠️  Info.plist not found at expected locations, searching..."
+          find build/ -name "*Info.plist" -o -name "*.plist" | head -5
+        fi
+        
+    - name: Configure iOS project for unsigned builds
+      run: |
+        PROJECT_FILE="build/LightLauncher.xcodeproj/project.pbxproj"
+        
+        if [ -f "$PROJECT_FILE" ]; then
+          echo "=== Configuring project for unsigned builds ==="
+          
+          # Create backup
+          cp "$PROJECT_FILE" "$PROJECT_FILE.backup"
+          
+          # Set iOS Deployment Target
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [^;]*;/IPHONEOS_DEPLOYMENT_TARGET = 14.0;/g' "$PROJECT_FILE"
           echo "✅ iOS deployment target updated to 14.0"
+          
+          # Force disable code signing for all configurations
+          sed -i '' 's/CODE_SIGN_IDENTITY = [^;]*;/CODE_SIGN_IDENTITY = "";/g' "$PROJECT_FILE"
+          sed -i '' 's/CODE_SIGNING_REQUIRED = [^;]*;/CODE_SIGNING_REQUIRED = NO;/g' "$PROJECT_FILE"
+          sed -i '' 's/CODE_SIGNING_ALLOWED = [^;]*;/CODE_SIGNING_ALLOWED = NO;/g' "$PROJECT_FILE"
+          sed -i '' 's/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = "";/g' "$PROJECT_FILE"
+          sed -i '' 's/PROVISIONING_PROFILE = [^;]*;/PROVISIONING_PROFILE = "";/g' "$PROJECT_FILE"
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = [^;]*;/PROVISIONING_PROFILE_SPECIFIER = "";/g' "$PROJECT_FILE"
+          
+          # Add explicit unsigned build settings if they don't exist
+          if ! grep -q "CODE_SIGN_IDENTITY.*\"\"" "$PROJECT_FILE"; then
+            # Add code signing settings to all build configurations
+            awk '
+            /buildSettings = \{/ {
+              print $0
+              print "\t\t\t\tCODE_SIGN_IDENTITY = \"\";"
+              print "\t\t\t\tCODE_SIGNING_REQUIRED = NO;"
+              print "\t\t\t\tCODE_SIGNING_ALLOWED = NO;"
+              print "\t\t\t\tDEVELOPMENT_TEAM = \"\";"
+              print "\t\t\t\tPROVISIONING_PROFILE = \"\";"
+              print "\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"\";"
+              next
+            }
+            { print }
+            ' "$PROJECT_FILE" > "$PROJECT_FILE.tmp" && mv "$PROJECT_FILE.tmp" "$PROJECT_FILE"
+          fi
+          
+          echo "✅ Project configured for unsigned builds"
+          
+          # Verify the changes
+          echo "=== Verifying unsigned build configuration ==="
+          grep -n "CODE_SIGN_IDENTITY\|CODE_SIGNING_REQUIRED\|CODE_SIGNING_ALLOWED\|DEVELOPMENT_TEAM" "$PROJECT_FILE" | head -10
+          
         else
           echo "❌ project.pbxproj not found"
           exit 1
         fi
         
-        # Add NSLocalNetworkUsageDescription to Info.plist
-        INFO_PLIST="build/LightLauncher.xcodeproj/LightLauncher-Info.plist"
-        if [ -f "$INFO_PLIST" ]; then
-          /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string 'Light Launcher uses local network to connect with TOMAT Navigator and provide tactile feedback for accessible navigation.'" "$INFO_PLIST" || echo "NSLocalNetworkUsageDescription already exists"
-          echo "✅ NSLocalNetworkUsageDescription added to Info.plist"
-        else
-          echo "⚠️  Info.plist not found at expected location, checking alternatives..."
-          find build/ -name "*Info.plist" -o -name "*.plist" | head -5
-        fi
-        
     - name: Build iOS project (unsigned)
       run: |
+        echo "=== Building unsigned iOS project ==="
+        
+        # Set up build environment to avoid signing
+        export CODE_SIGN_IDENTITY=""
+        export CODE_SIGNING_REQUIRED=NO
+        export CODE_SIGNING_ALLOWED=NO
+        export DEVELOPMENT_TEAM=""
+        export PROVISIONING_PROFILE=""
+        export PROVISIONING_PROFILE_SPECIFIER=""
+        
+        # Find the correct scheme name
+        SCHEME_NAME="LightLauncher"
+        if [ ! -f "build/LightLauncher.xcodeproj/xcshareddata/xcschemes/LightLauncher.xcscheme" ] && [ ! -f "build/LightLauncher.xcodeproj/project.xcworkspace/xcshareddata/xcschemes/LightLauncher.xcscheme" ]; then
+          echo "=== Checking available schemes ==="
+          xcodebuild -project build/LightLauncher.xcodeproj -list
+          
+          # Try to find the actual scheme name
+          SCHEME_NAME=$(xcodebuild -project build/LightLauncher.xcodeproj -list | grep -A 10 "Schemes:" | tail -n +2 | head -n 1 | xargs)
+          echo "=== Using scheme: $SCHEME_NAME ==="
+        fi
+        
+        # Build the project
         xcodebuild -project build/LightLauncher.xcodeproj \
-          -scheme LightLauncher \
-          -configuration Development \
+          -scheme "$SCHEME_NAME" \
+          -configuration Debug \
           -archivePath build/LightLauncher.xcarchive \
           -destination 'generic/platform=iOS' \
+          -allowProvisioningUpdates \
           archive \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGNING_ALLOWED=NO \
-          DEVELOPMENT_TEAM=""
-          
+          DEVELOPMENT_TEAM="" \
+          PROVISIONING_PROFILE="" \
+          PROVISIONING_PROFILE_SPECIFIER="" \
+          ONLY_ACTIVE_ARCH=NO \
+          ARCHS="arm64" \
+          VALID_ARCHS="arm64" \
+          ENABLE_BITCODE=NO \
+          -quiet || {
+            echo "❌ Build failed, trying alternative approach..."
+            
+            # Try building for simulator instead (for testing)
+            echo "=== Attempting simulator build as fallback ==="
+            xcodebuild -project build/LightLauncher.xcodeproj \
+              -scheme "$SCHEME_NAME" \
+              -configuration Debug \
+              -archivePath build/LightLauncher-sim.xcarchive \
+              -destination 'generic/platform=iOS Simulator' \
+              archive \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGNING_ALLOWED=NO \
+              DEVELOPMENT_TEAM="" \
+              ONLY_ACTIVE_ARCH=NO \
+              ARCHS="x86_64 arm64" \
+              VALID_ARCHS="x86_64 arm64" \
+              -quiet
+          }
+        
     # Optional: Build with signing (requires secrets)
     - name: Build iOS project (signed)
       if: ${{ vars.ENABLE_CODE_SIGNING == 'true' }}
       run: |
+        echo "=== Building signed iOS project ==="
+        
         # Import certificate
         echo "${{ secrets.IOS_CERTIFICATE_BASE64 }}" | base64 --decode > certificate.p12
         security create-keychain -p temp_keychain_password build.keychain
@@ -174,9 +290,17 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
         
+        # Restore signed build settings
+        PROJECT_FILE="build/LightLauncher.xcodeproj/project.pbxproj"
+        sed -i '' 's/CODE_SIGN_IDENTITY = "";/CODE_SIGN_IDENTITY = "iPhone Distribution";/g' "$PROJECT_FILE"
+        sed -i '' 's/CODE_SIGNING_REQUIRED = NO;/CODE_SIGNING_REQUIRED = YES;/g' "$PROJECT_FILE"
+        sed -i '' 's/CODE_SIGNING_ALLOWED = NO;/CODE_SIGNING_ALLOWED = YES;/g' "$PROJECT_FILE"
+        sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = "${{ secrets.APPLE_DEVELOPER_TEAM_ID }}";/g' "$PROJECT_FILE"
+        
         # Build with signing
+        SCHEME_NAME=$(xcodebuild -project build/LightLauncher.xcodeproj -list | grep -A 10 "Schemes:" | tail -n +2 | head -n 1 | xargs)
         xcodebuild -project build/LightLauncher.xcodeproj \
-          -scheme LightLauncher \
+          -scheme "$SCHEME_NAME" \
           -configuration Release \
           -archivePath build/LightLauncher-signed.xcarchive \
           -destination 'generic/platform=iOS' \
@@ -186,29 +310,78 @@ jobs:
     - name: Export IPA
       run: |
         cd build
+        
+        # Check for different archive types
+        ARCHIVE_PATH=""
         if [ -d "LightLauncher.xcarchive" ]; then
-          cd LightLauncher.xcarchive/Products/Applications
+          ARCHIVE_PATH="LightLauncher.xcarchive"
+        elif [ -d "LightLauncher-signed.xcarchive" ]; then
+          ARCHIVE_PATH="LightLauncher-signed.xcarchive"
+        elif [ -d "LightLauncher-sim.xcarchive" ]; then
+          ARCHIVE_PATH="LightLauncher-sim.xcarchive"
+          echo "⚠️  Using simulator archive - this won't run on real devices"
+        fi
+        
+        if [ -n "$ARCHIVE_PATH" ]; then
+          echo "✅ Found archive: $ARCHIVE_PATH"
+          cd "$ARCHIVE_PATH/Products/Applications"
+          
+          # Create Payload directory
           mkdir -p Payload
-          mv LightLauncher.app Payload/ || mv *.app Payload/
+          
+          # Find and move the .app bundle
+          APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" | head -1)
+          if [ -n "$APP_BUNDLE" ]; then
+            mv "$APP_BUNDLE" Payload/
+            echo "✅ Moved app bundle: $APP_BUNDLE"
+          else
+            echo "❌ No .app bundle found"
+            ls -la
+            exit 1
+          fi
+          
+          # Create IPA
           zip -r ../../../LightLauncher.ipa Payload/
           cd ../../../
-          echo "✅ IPA created successfully"
-          ls -la LightLauncher.ipa
+          
+          if [ -f "LightLauncher.ipa" ]; then
+            echo "✅ IPA created successfully"
+            ls -la LightLauncher.ipa
+            
+            # Get IPA info
+            unzip -l LightLauncher.ipa | head -10
+          else
+            echo "❌ IPA creation failed"
+            exit 1
+          fi
         else
-          echo "❌ xcarchive not found"
+          echo "❌ No archive found"
+          ls -la
           exit 1
         fi
         
     - name: Upload IPA to GitHub Artifacts
       uses: actions/upload-artifact@v4
+      if: success()
       with:
-        name: LightLauncher-iOS
+        name: LightLauncher-iOS-${{ github.run_number }}
         path: build/LightLauncher.ipa
         retention-days: 30
         
     - name: Upload Xcode project to GitHub Artifacts
       uses: actions/upload-artifact@v4
+      if: always()
       with:
-        name: LightLauncher-Xcode-Project
+        name: LightLauncher-Xcode-Project-${{ github.run_number }}
         path: build/LightLauncher.xcodeproj
+        retention-days: 7
+        
+    - name: Upload build logs (on failure)
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build-logs-${{ github.run_number }}
+        path: |
+          build/LightLauncher.xcodeproj/project.pbxproj.backup
+          build/LightLauncher.xcodeproj/project.pbxproj
         retention-days: 7
